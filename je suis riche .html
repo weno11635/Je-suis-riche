@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual Money Tycoon</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #121212;
+            color: #fff;
+            overflow-x: hidden;
+            margin: 0;
+        }
+        header {
+            background: linear-gradient(135deg, #1a2b3d, #004d7a);
+            padding: 60px 20px;
+            text-align: center;
+            box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.5);
+            animation: slideDown 1.5s ease-out;
+        }
+        @keyframes slideDown {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(0); }
+        }
+        header h1 {
+            font-size: 3em;
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #00aaff;
+            text-shadow: 2px 2px 15px rgba(0, 170, 255, 0.8);
+        }
+        main {
+            padding: 50px 20px;
+            background-color: #181818;
+            min-height: 80vh;
+            animation: fadeIn 2s ease-in-out;
+        }
+        @keyframes fadeIn {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+        .money, .level {
+            font-size: 2em;
+            color: #00aaff;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-shadow: 0px 0px 15px rgba(0, 170, 255, 0.8);
+        }
+        .content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 40px;
+            justify-content: center;
+        }
+        .content div {
+            background: #292929;
+            padding: 30px;
+            border-radius: 15px;
+            width: 250px;
+            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.7);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: popUp 0.8s ease-out;
+        }
+        @keyframes popUp {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .content div:hover {
+            transform: scale(1.05);
+            box-shadow: 0px 10px 30px rgba(0, 170, 255, 0.7);
+        }
+        .button {
+            background-color: #00aaff;
+            color: white;
+            font-size: 1.2em;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        .button:hover {
+            background-color: #0077cc;
+        }
+        select {
+            font-size: 1.2em;
+            padding: 12px;
+            background-color: #444;
+            color: white;
+            border-radius: 8px;
+            border: none;
+            width: 100%;
+            margin-bottom: 20px;
+            transition: background-color 0.3s ease;
+        }
+        select:hover {
+            background-color: #666;
+        }
+        footer {
+            display: none;
+        }
+        /* Styles pour les messages */
+        .warning-message, .rules-message, .refresh-message {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            z-index: 9999;
+            font-size: 1.5em;
+            padding: 20px;
+            animation: slideIn 0.5s ease-in-out;
+        }
+        @keyframes slideIn {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(0); }
+        }
+        .warning-message p, .rules-message p, .refresh-message p {
+            margin: 20px 0;
+        }
+
+        /* Styles pour rendre le site responsive */
+        @media screen and (max-width: 768px) {
+            header h1 {
+                font-size: 2.5em;
+            }
+            .content {
+                flex-direction: column;
+                align-items: center;
+            }
+            .content div {
+                width: 80%;
+                margin-bottom: 30px;
+            }
+            .money {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Message d'avertissement -->
+<div class="warning-message" id="warningMessage">
+    <div>
+        <p><strong>Attention :</strong> Ce site est un projet fictif créé à des fins de divertissement. Il ne s'agit pas d'un site réel où vous pouvez gagner de l'argent réel, acheter de véritables objets ou effectuer des transactions. Tout ce qui est présenté ici est purement virtuel et ne doit pas être pris au sérieux. Merci de votre compréhension !</p>
+        <button class="button" id="closeWarningButton">OK</button>
+    </div>
+</div>
+
+<!-- Message des règles du jeu -->
+<div class="rules-message" id="rulesMessage" style="display:none;">
+    <div>
+        <p><strong>Règles du jeu :</strong><br>
+        Dans ce mini-jeu, vous gagnez de l'argent fictif en regardant des publicités. Cet argent vous permet d'acheter des objets comme des voitures, des maisons, des vélos, et bien plus encore !<br>
+        Vous pouvez également vendre vos objets pour récupérer de l'argent. Le but est de collectionner autant d'objets que possible et d'augmenter votre richesse.<br>
+        <strong>Amusez-vous bien !</strong></p>
+        <button class="button" id="closeRulesButton">OK</button>
+    </div>
+</div>
+
+<!-- Message d'avertissement sur l'actualisation -->
+<div class="refresh-message" id="refreshMessage" style="display:none;">
+    <div>
+        <p><strong>Attention :</strong> Si vous actualisez cette page, tout votre progrès sera réinitialisé. Vous perdrez tout l'argent que vous avez gagné et tous les objets que vous avez achetés. Veuillez garder cela en tête avant de recharger le site.</p>
+        <button class="button" id="closeRefreshButton">OK</button>
+    </div>
+</div>
+
+<header>
+    <h1>Je suis riche</h1>
+</header>
+
+<main>
+    <div class="money" id="money">Argent: 0 €</div>
+    <div class="level" id="level">Niveau: 1</div>
+
+    <div class="content">
+        <div>
+            <h2>Regarder une publicité</h2>
+            <p>Cliquez sur le bouton pour regarder une publicité et gagner de l'argent !</p>
+            <button class="button" id="watchAdButton">Regarder la publicité</button>
+        </div>
+
+        <div>
+            <h2>Achetez des objets</h2>
+            <p>Choisissez un objet à acheter parmi ceux disponibles :</p>
+
+            <!-- Sélection d'objet -->
+            <select id="itemSelect">
+                <option value="car">Voiture - 1000000 €</option>
+                <option value="bike">Vélo - 100000 €</option>
+                <option value="house">Maison - 10000000 €</option>
+                <option value="plane">Avion - 50000000 €</option>
+                <option value="yacht">Yacht - 100000000 €</option>
+                <option value="mansion">Château - 200000000 €</option>
+                <option value="superCar">Super Voiture - 5000000 €</option>
+                <option value="jetSki">Jet Ski - 200000 €</option>
+                <option value="laptop">Ordinateur portable - 500000 €</option>
+                <option value="watch">Montre de luxe - 150000 €</option>
+                <option value="deskChair">Chaise de bureau - 50000 €</option>
+                <option value="phone">Smartphone haut de gamme - 200000 €</option>
+                <option value="tablet">Tablette - 300000 €</option>
+            </select>
+
+            <button class="button" id="buyItemButton">Acheter l'objet sélectionné</button>
+        </div>
+    </div>
+
+    <!-- Inventaire des objets achetés -->
+    <div class="inventory" id="inventory">
+        <h3>Inventaire</h3>
+        <ul id="inventoryList">
+            <!-- Liste des objets achetés -->
+        </ul>
+    </div>
+</main>
+
+<script>
+    let money = 0;
+    let level = 1;
+    let objectsBought = 0;
+
+    const moneyDisplay = document.getElementById('money');
+    const levelDisplay = document.getElementById('level');
+    const inventoryList = document.getElementById('inventoryList');
+    const watchAdButton = document.getElementById('watchAdButton');
+    const buyItemButton = document.getElementById('buyItemButton');
+    const itemSelect = document.getElementById('itemSelect');
+    
+    // Gagner de l'argent en regardant une publicité
+    watchAdButton.addEventListener('click', () => {
+        const adReward = 1000000;
+        money += adReward;
+        moneyDisplay.textContent = `Argent: ${money} €`;
+        checkLevelUp();
+    });
+
+    // Acheter un objet
+    buyItemButton.addEventListener('click', () => {
+        const selectedItem = itemSelect.value;
+        const itemPrice = getItemPrice(selectedItem);
+
+        if (money >= itemPrice) {
+            money -= itemPrice;
+            moneyDisplay.textContent = `Argent: ${money} €`;
+            addToInventory(selectedItem);
+            objectsBought++;
+            checkLevelUp();
+        } else {
+            alert("Vous n'avez pas assez d'argent pour acheter cet objet !");
+        }
+    });
+
+    // Ajouter un objet à l'inventaire
+    function addToInventory(item) {
+        const listItem = document.createElement('li');
+        listItem.textContent = item;
+        inventoryList.appendChild(listItem);
+    }
+
+    // Obtenir le prix de l'objet
+    function getItemPrice(item) {
+        switch(item) {
+            case 'car': return 1000000;
+            case 'bike': return 100000;
+            case 'house': return 10000000;
+            case 'plane': return 50000000;
+            case 'yacht': return 100000000;
+            case 'mansion': return 200000000;
+            case 'superCar': return 5000000;
+            case 'jetSki': return 200000;
+            case 'laptop': return 500000;
+            case 'watch': return 150000;
+            case 'deskChair': return 50000;
+            case 'phone': return 200000;
+            case 'tablet': return 300000;
+            default: return 0;
+        }
+    }
+
+    // Vérifier si le niveau a changé
+    function checkLevelUp() {
+        const newLevel = Math.floor(objectsBought / 5) + 1;
+        if (newLevel > level) {
+            level = newLevel;
+            levelDisplay.textContent = `Niveau: ${level}`;
+            money += 1000000; // Gagner 1 million d'euros à chaque montée de niveau
+            moneyDisplay.textContent = `Argent: ${money} €`;
+        }
+    }
+
+    // Fermeture des messages
+    document.getElementById('closeWarningButton').addEventListener('click', () => {
+        document.getElementById('warningMessage').style.display = 'none';
+        document.getElementById('rulesMessage').style.display = 'block';
+    });
+
+    document.getElementById('closeRulesButton').addEventListener('click', () => {
+        document.getElementById('rulesMessage').style.display = 'none';
+        document.getElementById('refreshMessage').style.display = 'block';
+    });
+
+    document.getElementById('closeRefreshButton').addEventListener('click', () => {
+        document.getElementById('refreshMessage').style.display = 'none';
+    });
+</script>
+
+</body>
+</html>
